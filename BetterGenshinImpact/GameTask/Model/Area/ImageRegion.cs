@@ -160,7 +160,7 @@ public class ImageRegion : Region
                 throw new Exception($"[TemplateMatch]识别对象{ro.Name}的模板图片不能为null");
             }
 
-            if (ro.RegionOfInterest != Rect.Empty)
+            if (ro.RegionOfInterest != default)
             {
                 // TODO roi 是可以加缓存的
                 if (!(0 <= ro.RegionOfInterest.X && 0 <= ro.RegionOfInterest.Width && ro.RegionOfInterest.X + ro.RegionOfInterest.Width <= roi.Cols
@@ -202,7 +202,7 @@ public class ImageRegion : Region
             }
 
             var roi = SrcGreyMat;
-            if (ro.RegionOfInterest != Rect.Empty)
+            if (ro.RegionOfInterest != default)
             {
                 roi = new Mat(SrcGreyMat, ro.RegionOfInterest);
             }
@@ -280,7 +280,7 @@ public class ImageRegion : Region
             if (RecognitionTypes.ColorRangeAndOcr.Equals(ro.RecognitionType))
             {
                 roi = SrcMat;
-                if (ro.RegionOfInterest != Rect.Empty)
+                if (ro.RegionOfInterest != default)
                 {
                     roi = new Mat(SrcMat, ro.RegionOfInterest);
                 }
@@ -294,7 +294,7 @@ public class ImageRegion : Region
             else
             {
                 roi = SrcGreyMat;
-                if (ro.RegionOfInterest != Rect.Empty)
+                if (ro.RegionOfInterest != default)
                 {
                     roi = new Mat(SrcGreyMat, ro.RegionOfInterest);
                 }
@@ -311,7 +311,7 @@ public class ImageRegion : Region
                     var drawList = result.Regions.Select(item => this.ToRectDrawable(item.Rect.BoundingRect() + ro.RegionOfInterest.Location, ro.Name, ro.DrawOnWindowPen)).ToList();
                     drawContent.PutOrRemoveRectList(ro.Name, drawList);
                 }
-                if (ro.RegionOfInterest != Rect.Empty)
+                if (ro.RegionOfInterest != default)
                 {
                     var newRa = Derive(ro.RegionOfInterest);
                     newRa.Text = text;
@@ -387,7 +387,7 @@ public class ImageRegion : Region
                 throw new Exception($"[TemplateMatch]识别对象{ro.Name}的模板图片不能为null");
             }
 
-            if (ro.RegionOfInterest != Rect.Empty)
+            if (ro.RegionOfInterest != default)
             {
                 roi = new Mat(roi, ro.RegionOfInterest);
             }
@@ -419,7 +419,7 @@ public class ImageRegion : Region
         else if (RecognitionTypes.Ocr.Equals(ro.RecognitionType))
         {
             var roi = SrcGreyMat;
-            if (ro.RegionOfInterest != Rect.Empty)
+            if (ro.RegionOfInterest != default)
             {
                 roi = new Mat(SrcGreyMat, ro.RegionOfInterest);
             }

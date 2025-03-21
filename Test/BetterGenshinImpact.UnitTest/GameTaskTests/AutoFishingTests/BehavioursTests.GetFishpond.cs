@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BetterGenshinImpact.GameTask.Model.Area;
 using BetterGenshinImpact.Core.Config;
-using Compunet.YoloV8;
+using Compunet.YoloSharp;
 using BetterGenshinImpact.GameTask.AutoFishing.Model;
 using Microsoft.Extensions.Time.Testing;
 using OpenCvSharp;
@@ -30,7 +30,7 @@ namespace BetterGenshinImpact.UnitTest.GameTaskTests.AutoFishingTests
             Mat mat = new Mat(@$"..\..\..\Assets\AutoFishing\{screenshot1080p}");
             var imageRegion = new GameCaptureRegion(mat, 0, 0, drawContent: new FakeDrawContent());
 
-            var predictor = YoloV8Builder.CreateDefaultBuilder().UseOnnxModel(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx")).Build();
+            var predictor = new YoloPredictor(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx"));
 
             var blackboard = new Blackboard(predictor, sleep: i => { });
 
@@ -58,7 +58,7 @@ namespace BetterGenshinImpact.UnitTest.GameTaskTests.AutoFishingTests
             Mat mat = new Mat(@$"..\..\..\Assets\AutoFishing\{screenshot1080p}");
             var imageRegion = new GameCaptureRegion(mat, 0, 0, drawContent: new FakeDrawContent());
 
-            var predictor = YoloV8Builder.CreateDefaultBuilder().UseOnnxModel(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx")).Build();
+            var predictor = new YoloPredictor(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx"));
 
             var blackboard = new Blackboard(predictor, sleep: i => { });
             blackboard.chooseBaitFailures = chooseBaitfailures.ToList();
@@ -93,7 +93,7 @@ namespace BetterGenshinImpact.UnitTest.GameTaskTests.AutoFishingTests
             Mat mat = new Mat(@$"..\..\..\Assets\AutoFishing\{screenshot1080p}");
             var imageRegion = new GameCaptureRegion(mat, 0, 0, drawContent: new FakeDrawContent());
 
-            var predictor = YoloV8Builder.CreateDefaultBuilder().UseOnnxModel(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx")).Build();
+            var predictor = new YoloPredictor(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx"));
 
             var blackboard = new Blackboard(predictor, sleep: i => { });
 

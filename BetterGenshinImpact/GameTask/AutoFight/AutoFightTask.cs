@@ -30,7 +30,7 @@ public class AutoFightTask : ISoloTask
 
     private CancellationToken _ct;
 
-    private readonly BgiYoloV8Predictor _predictor;
+    private readonly BgiYoloPredictor _predictor;
 
     private DateTime _lastFightFlagTime = DateTime.Now; // 战斗标志最近一次出现的时间
 
@@ -182,7 +182,7 @@ public class AutoFightTask : ISoloTask
 
         if (_taskParam.FightFinishDetectEnabled)
         {
-            _predictor = BgiYoloV8PredictorFactory.GetPredictor(@"Assets\Model\World\bgi_world.onnx");
+            _predictor = BgiYoloPredictorFactory.GetPredictor(@"Assets\Model\World\bgi_world.onnx");
         }
 
         _finishDetectConfig = new TaskFightFinishDetectConfig(_taskParam.FinishDetectConfig);
@@ -236,7 +236,9 @@ public class AutoFightTask : ISoloTask
             {
                 while (!cts2.Token.IsCancellationRequested)
                 {
+                    var combatCommandAvatarNames = combatCommands.Select(command => command.Name).ToHashSet();
                     var minCoolDown = combatScenes.Avatars
+                        .Where(a => combatCommandAvatarNames.Contains(a.Name))
                         .Select(a => CheckAvatarAvliable(a, actionSchedulerByCd)).Min();
                     var skipFightName = "";
                     if (minCoolDown > 0)

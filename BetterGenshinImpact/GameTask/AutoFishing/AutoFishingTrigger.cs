@@ -7,16 +7,11 @@ using BetterGenshinImpact.GameTask.Common;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Threading;
 using Point = OpenCvSharp.Point;
 using Fischless.WindowsInput;
 using BetterGenshinImpact.GameTask.Model.Area;
 using BetterGenshinImpact.Core.Config;
 using BetterGenshinImpact.Core.Recognition.ONNX;
-using Compunet.YoloV8;
 
 namespace BetterGenshinImpact.GameTask.AutoFishing
 {
@@ -45,7 +40,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
 
         public AutoFishingTrigger()
         {
-            var predictor = YoloV8Builder.CreateDefaultBuilder().UseOnnxModel(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx")).WithSessionOptions(BgiSessionOption.Instance.Options).Build();
+            var predictor = BgiSessionOption.Instance.MakeYoloPredictor(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx"));
             this.blackboard = new Blackboard(predictor, this.Sleep, AutoFishingAssets.Instance);
 
             BehaviourTreeLaTiao = FluentBuilder.Create<ImageRegion>()
@@ -341,9 +336,9 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
         //{
         //    VisionContext.Instance().DrawContent.PutOrRemoveRectList(new List<(string, RectDrawable)>
         //    {
-        //        ("FishingBarLeft", new RectDrawable(System.Windows.Rect.Empty)),
-        //        ("FishingBarCur", new RectDrawable(System.Windows.Rect.Empty)),
-        //        ("FishingBarRight", new RectDrawable(System.Windows.Rect.Empty))
+        //        ("FishingBarLeft", new RectDrawable(System.Windows.default)),
+        //        ("FishingBarCur", new RectDrawable(System.Windows.default)),
+        //        ("FishingBarRight", new RectDrawable(System.Windows.default))
         //    });
         //    VisionContext.Instance().DrawContent.RemoveRect("FishBiteTips");
         //    VisionContext.Instance().DrawContent.RemoveRect("StartFishingButton");

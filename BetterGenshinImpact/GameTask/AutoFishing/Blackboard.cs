@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using BetterGenshinImpact.GameTask.AutoFishing.Assets;
 using BetterGenshinImpact.GameTask.AutoFishing.Model;
-using Compunet.YoloV8;
+using Compunet.YoloSharp;
 using OpenCvSharp;
 
 namespace BetterGenshinImpact.GameTask.AutoFishing
@@ -52,7 +52,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
         /// <summary>
         /// 拉条位置的识别框
         /// </summary>
-        internal Rect fishBoxRect = Rect.Empty;
+        internal Rect fishBoxRect = default;
 
         /// <summary>
         /// 是否正在选鱼饵界面
@@ -73,8 +73,8 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
         internal bool pitchReset = true;
 
         #region 分层暂放
-        private readonly YoloV8Predictor? predictor;
-        internal YoloV8Predictor Predictor
+        private readonly YoloPredictor? predictor;
+        internal YoloPredictor Predictor
         {
             get
             {
@@ -93,7 +93,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
         }
 
 
-        public Blackboard(YoloV8Predictor? predictor = null, Action<int>? sleep = null, AutoFishingAssets? autoFishingAssets = null)
+        public Blackboard(YoloPredictor? predictor = null, Action<int>? sleep = null, AutoFishingAssets? autoFishingAssets = null)
         {
             this.predictor = predictor;
             this.Sleep = sleep ?? (_ => throw new NotImplementedException());
@@ -106,7 +106,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
             abort = false;
             throwRodNoTargetTimes = 0;
             throwRodNoBaitFishFailures = new List<string>();
-            fishBoxRect = Rect.Empty;
+            fishBoxRect = default;
             chooseBaitUIOpening = false;
             chooseBaitFailures = new List<string>();
             pitchReset = true;

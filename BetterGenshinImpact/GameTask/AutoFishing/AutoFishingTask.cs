@@ -13,7 +13,7 @@ using BetterGenshinImpact.Core.Simulator;
 using BetterGenshinImpact.View.Drawable;
 using BetterGenshinImpact.GameTask.AutoFishing.Assets;
 using Vanara.PInvoke;
-using Compunet.YoloV8;
+using Compunet.YoloSharp;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -47,7 +47,8 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
         {
             this._ct = ct;
 
-            var predictor = YoloV8Builder.CreateDefaultBuilder().UseOnnxModel(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx")).WithSessionOptions(BgiSessionOption.Instance.Options).Build();
+            var predictor =
+                BgiSessionOption.Instance.MakeYoloPredictor(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx"));
             Blackboard blackboard = new Blackboard(predictor, this.Sleep, AutoFishingAssets.Instance);
 
             // @formatter:off
@@ -275,7 +276,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
                 imageRegion.SrcBitmap.Save(memoryStream, ImageFormat.Bmp);
                 memoryStream.Seek(0, SeekOrigin.Begin);
                 var result = blackboard.Predictor.Detect(memoryStream);
-                if (result.Boxes.Any())
+                if (result.Any())
                 {
                     Fishpond fishpond = new Fishpond(result);
                     logger.LogInformation("定位到鱼塘：" + string.Join('、', fishpond.Fishes.GroupBy(f => f.FishType).Select(g => $"{g.Key.ChineseName}{g.Count()}条")));

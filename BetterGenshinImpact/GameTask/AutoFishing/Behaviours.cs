@@ -5,7 +5,7 @@ using BetterGenshinImpact.GameTask.AutoFishing.Model;
 using BetterGenshinImpact.GameTask.Model.Area;
 using BetterGenshinImpact.Helpers;
 using BetterGenshinImpact.View.Drawable;
-using Compunet.YoloV8;
+using Compunet.YoloSharp;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using System;
@@ -61,7 +61,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
             var result = blackboard.Predictor.Detect(memoryStream);
             Debug.WriteLine($"YOLOv8识别: {result.Speed}");
             var fishpond = new Fishpond(result, ignoreObtained: true);
-            if (fishpond.FishpondRect == Rect.Empty)
+            if (fishpond.FishpondRect == default)
             {
                 return BehaviourStatus.Running;
             }
@@ -311,7 +311,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
             var fishpond = new Fishpond(result, includeTarget: timeProvider.GetLocalNow() <= ignoreObtainedEndTime);
             blackboard.fishpond = fishpond;
             Random _rd = new();
-            if (fishpond.TargetRect == null || fishpond.TargetRect == Rect.Empty)
+            if (fishpond.TargetRect == null || fishpond.TargetRect == default)
             {
                 if (!foundTarget)
                 {
@@ -708,7 +708,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
             //VisionContext.Instance().DrawContent.PutRect("liftingWordsAreaRect", liftingWordsAreaRect.ToRectDrawable(new Pen(Color.Cyan, 2)));
             var wordCaptureMat = new Mat(imageRegion.SrcMat, liftingWordsAreaRect);
             var currentBiteWordsTips = AutoFishingImageRecognition.MatchFishBiteWords(wordCaptureMat, liftingWordsAreaRect);
-            if (currentBiteWordsTips != Rect.Empty)
+            if (currentBiteWordsTips != default)
             {
                 // VisionContext.Instance().DrawContent.PutRect("FishBiteTips",
                 //     currentBiteWordsTips

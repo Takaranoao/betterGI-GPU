@@ -227,7 +227,7 @@ public class GraphicsCapture : IGameCapture
         try
         {
             // 创建一个新的Mat
-            var newFrame = new Mat(stagingTexture.Description.Height, stagingTexture.Description.Width,
+            var newFrame = Mat.FromPixelData(stagingTexture.Description.Height, stagingTexture.Description.Width,
                 _isHdrEnabled ? MatType.MakeType(7, 4) : MatType.CV_8UC4, dataBox.DataPointer);
 
             // 如果是HDR，进行HDR到SDR的转换

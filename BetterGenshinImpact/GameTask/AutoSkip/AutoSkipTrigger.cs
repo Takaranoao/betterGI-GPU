@@ -758,14 +758,14 @@ public partial class AutoSkipTrigger : ITaskTrigger
             }
 
             // 最多4个物品 现在就支持一个
-            // var prevGoodsRect = Rect.Empty;
+            // var prevGoodsRect = default;
             // for (var i = 1; i <= 4; i++)
             // {
             //     // 不断的截取出右边的物品
             //     TaskControl.Sleep(200);
             //     content = TaskControl.CaptureToContent();
             //     var gameArea = content.CaptureRectArea;
-            //     if (prevGoodsRect != Rect.Empty)
+            //     if (prevGoodsRect != default)
             //     {
             //         var r = content.CaptureRectArea.ToRect();
             //         var newX = prevGoodsRect.X + prevGoodsRect.Width;

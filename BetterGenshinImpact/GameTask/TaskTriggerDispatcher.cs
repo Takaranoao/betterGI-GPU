@@ -31,7 +31,7 @@ namespace BetterGenshinImpact.GameTask
         private static readonly object _locker = new();
         private int _frameIndex = 0;
 
-        private RECT _gameRect = RECT.Empty;
+        private RECT _gameRect = default;
         private bool _prevGameActive;
 
         private DateTime _prevManualGc = DateTime.MinValue;
@@ -143,7 +143,7 @@ namespace BetterGenshinImpact.GameTask
         {
             _timer.Stop();
             GameCapture?.Stop();
-            _gameRect = RECT.Empty;
+            _gameRect = default;
             _prevGameActive = false;
         }
 
@@ -346,7 +346,7 @@ namespace BetterGenshinImpact.GameTask
         {
             var hWnd = TaskContext.Instance().GameHandle;
             var currentRect = SystemControl.GetCaptureRect(hWnd);
-            if (_gameRect == RECT.Empty)
+            if (_gameRect == default)
             {
                 _gameRect = new RECT(currentRect);
             }

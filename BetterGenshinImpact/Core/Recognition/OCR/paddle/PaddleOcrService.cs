@@ -4,6 +4,7 @@ using Sdcb.PaddleInference;
 using Sdcb.PaddleOCR;
 using Sdcb.PaddleOCR.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 
@@ -50,15 +51,15 @@ public class PaddleOcrService : IOcrService
         return OcrResult(mat).Text;
     }
 
-    public PaddleOcrResult OcrResult(Mat mat)
+    public IOcrResult OcrResult(Mat mat)
     {
         lock (locker)
         {
-            long startTime = Stopwatch.GetTimestamp();
+            var startTime = Stopwatch.GetTimestamp();
             var result = _paddleOcrAll.Run(mat);
-            TimeSpan time = Stopwatch.GetElapsedTime(startTime);
+            var time = Stopwatch.GetElapsedTime(startTime);
             Debug.WriteLine($"PaddleOcr 耗时 {time.TotalMilliseconds}ms 结果: {result.Text}");
-            return result;
+            return new PaddleOcrResultAdapter(result);
         }
     }
 

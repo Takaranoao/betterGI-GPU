@@ -6,7 +6,7 @@ using BetterGenshinImpact.GameTask.AutoFight.Assets;
 using BetterGenshinImpact.GameTask.AutoFight.Config;
 using BetterGenshinImpact.GameTask.Model.Area;
 using BetterGenshinImpact.Helpers;
-using Compunet.YoloV8;
+using Compunet.YoloSharp;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
@@ -20,6 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using BetterGenshinImpact.Core.Simulator;
+using Compunet.YoloSharp.Data;
 using static BetterGenshinImpact.GameTask.Common.TaskControl;
 
 namespace BetterGenshinImpact.GameTask.AutoFight.Model;
@@ -38,11 +39,8 @@ public class CombatScenes : IDisposable
 
     public int AvatarCount { get; set; }
 
-    private readonly YoloV8Predictor _predictor =
-        YoloV8Builder.CreateDefaultBuilder()
-            .UseOnnxModel(Global.Absolute(@"Assets\Model\Common\avatar_side_classify_sim.onnx"))
-            .WithSessionOptions(BgiSessionOption.Instance.Options)
-            .Build();
+    private readonly YoloPredictor _predictor = BgiSessionOption.Instance.MakeYoloPredictor(
+        Global.Absolute(@"Assets\Model\Common\avatar_side_classify_sim.onnx"));
 
     public int ExpectedTeamAvatarNum { get; private set; } = 4;
 
@@ -163,25 +161,29 @@ public class CombatScenes : IDisposable
         Debug.WriteLine($"角色侧面头像识别结果：{result}");
         speedTimer.DebugPrint();
 
-        if (result.TopClass.Name.Name.StartsWith("Qin") || result.TopClass.Name.Name.Contains("Costume"))
+        var topClass = result.GetTopClass();
+
+        if (topClass.Name.Name.StartsWith("Qin") || topClass.Name.Name.Contains("Costume"))
         {
             // 降低琴和衣装角色的识别率要求
-            if (result.TopClass.Confidence < 0.51)
+            if (topClass.Confidence < 0.51)
             {
                 Cv2.ImWrite(@"log\avatar_side_classify_error.png", src.ToMat());
-                throw new Exception($"无法识别第{index}位角色，置信度{result.TopClass.Confidence:F1}，结果：{result.TopClass.Name.Name}。请重新阅读 BetterGI 文档中的《快速上手》！");
+                throw new Exception(
+                    $"无法识别第{index}位角色，置信度{topClass.Confidence:F1}，结果：{topClass.Name.Name}。请重新阅读 BetterGI 文档中的《快速上手》！");
             }
         }
         else
         {
-            if (result.TopClass.Confidence < 0.7)
+            if (topClass.Confidence < 0.7)
             {
                 Cv2.ImWrite(@"log\avatar_side_classify_error.png", src.ToMat());
-                throw new Exception($"无法识别第{index}位角色，置信度{result.TopClass.Confidence:F1}，结果：{result.TopClass.Name.Name}。请重新阅读 BetterGI 文档中的《快速上手》！");
+                throw new Exception(
+                    $"无法识别第{index}位角色，置信度{topClass.Confidence:F1}，结果：{topClass.Name.Name}。请重新阅读 BetterGI 文档中的《快速上手》！");
             }
         }
 
-        return result.TopClass.Name.Name;
+        return topClass.Name.Name;
     }
 
     private void InitializeTeamFromConfig(string teamNames)
@@ -231,7 +233,7 @@ public class CombatScenes : IDisposable
         var avatars = new Avatar[AvatarCount];
         for (var i = 0; i < AvatarCount; i++)
         {
-            var nameRect = nameRects?[i] ?? Rect.Empty;
+            var nameRect = nameRects?[i] ?? default;
             avatars[i] = new Avatar(this, names[i], i + 1, nameRect)
             {
                 IndexRect = avatarIndexRectList[i]
@@ -253,7 +255,7 @@ public class CombatScenes : IDisposable
     {
         // 释放所有按键
         Simulation.ReleaseAllKey();
-        
+
         var mwk = SelectAvatar("玛薇卡");
         if (mwk != null)
         {
@@ -306,7 +308,8 @@ public class CombatScenes : IDisposable
         // 剪裁出队伍区域
         var teamRa = content.CaptureRectArea.DeriveCrop(AutoFightAssets.Instance.TeamRectNoIndex);
         // 过滤出白色
-        var hsvFilterMat = OpenCvCommonHelper.InRangeHsv(teamRa.SrcMat, new Scalar(0, 0, 210), new Scalar(255, 30, 255));
+        var hsvFilterMat =
+            OpenCvCommonHelper.InRangeHsv(teamRa.SrcMat, new Scalar(0, 0, 210), new Scalar(255, 30, 255));
 
         // 识别队伍内角色
         var result = OcrFactory.Paddle.OcrResult(hsvFilterMat);
@@ -315,7 +318,7 @@ public class CombatScenes : IDisposable
     }
 
     [Obsolete]
-    private void ParseTeamOcrResult(PaddleOcrResult result, ImageRegion rectArea)
+    private void ParseTeamOcrResult(IOcrResult result, ImageRegion rectArea)
     {
         List<string> names = [];
         List<Rect> nameRects = [];
@@ -364,7 +367,8 @@ public class CombatScenes : IDisposable
                     }
 
                     var rect = item.Rect.BoundingRect();
-                    if (rect.Y > wanderer.Y && wanderer.Y + wanderer.Height > rect.Y + rect.Height && !names.Contains("流浪者"))
+                    if (rect.Y > wanderer.Y && wanderer.Y + wanderer.Height > rect.Y + rect.Height &&
+                        !names.Contains("流浪者"))
                     {
                         names.Add("流浪者");
                         nameRects.Add(item.Rect.BoundingRect());

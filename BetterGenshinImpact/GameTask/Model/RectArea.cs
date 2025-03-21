@@ -249,7 +249,7 @@
 //                 throw new Exception($"[TemplateMatch]识别对象{ro.Name}的模板图片不能为null");
 //             }
 //
-//             if (ro.RegionOfInterest != Rect.Empty)
+//             if (ro.RegionOfInterest != default)
 //             {
 //                 // TODO roi 是可以加缓存的
 //                 // if (!(0 <= ro.RegionOfInterest.X && 0 <= ro.RegionOfInterest.Width && ro.RegionOfInterest.X + ro.RegionOfInterest.Width <= roi.Cols
@@ -293,7 +293,7 @@
 //             }
 //
 //             var roi = SrcGreyMat;
-//             if (ro.RegionOfInterest != Rect.Empty)
+//             if (ro.RegionOfInterest != default)
 //             {
 //                 roi = new Mat(SrcGreyMat, ro.RegionOfInterest);
 //             }
@@ -414,7 +414,7 @@
 //                 throw new Exception($"[TemplateMatch]识别对象{ro.Name}的模板图片不能为null");
 //             }
 //
-//             if (ro.RegionOfInterest != Rect.Empty)
+//             if (ro.RegionOfInterest != default)
 //             {
 //                 // TODO roi 是可以加缓存的
 //                 roi = new Mat(roi, ro.RegionOfInterest);
@@ -449,7 +449,7 @@
 //         else if (RecognitionTypes.Ocr.Equals(ro.RecognitionType))
 //         {
 //             var roi = SrcGreyMat;
-//             if (ro.RegionOfInterest != Rect.Empty)
+//             if (ro.RegionOfInterest != default)
 //             {
 //                 roi = new Mat(SrcGreyMat, ro.RegionOfInterest);
 //             }
@@ -557,7 +557,7 @@
 //     /// OCR识别
 //     /// </summary>
 //     /// <returns>所有结果</returns>
-//     public PaddleOcrResult OcrResult()
+//     public IOcrResult.OcrResultRegion OcrResult()
 //     {
 //         return OcrFactory.Paddle.OcrResult(SrcGreyMat);
 //     }

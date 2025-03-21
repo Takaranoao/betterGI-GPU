@@ -104,6 +104,6 @@ public class OpenCvCommonHelper
     {
         var mask = new Mat();
         Cv2.InRange(src, s, s, mask);
-        return 255 - mask;
+        return ~mask;
     }
 }

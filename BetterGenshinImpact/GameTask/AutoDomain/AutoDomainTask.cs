@@ -14,7 +14,7 @@ using BetterGenshinImpact.GameTask.Model.Area;
 using BetterGenshinImpact.Helpers;
 using BetterGenshinImpact.Service.Notification;
 using BetterGenshinImpact.View.Drawable;
-using Compunet.YoloV8;
+using Compunet.YoloSharp;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using System;
@@ -44,7 +44,7 @@ public class AutoDomainTask : ISoloTask
 
     private readonly AutoDomainParam _taskParam;
 
-    private readonly YoloV8Predictor _predictor;
+    private readonly YoloPredictor _predictor;
 
     private readonly AutoDomainConfig _config;
 
@@ -56,11 +56,7 @@ public class AutoDomainTask : ISoloTask
     {
         AutoFightAssets.DestroyInstance();
         _taskParam = taskParam;
-        _predictor = YoloV8Builder.CreateDefaultBuilder()
-            .UseOnnxModel(Global.Absolute(@"Assets\Model\Domain\bgi_tree.onnx"))
-            .WithSessionOptions(BgiSessionOption.Instance.Options)
-            .Build();
-
+        _predictor = BgiSessionOption.Instance.MakeYoloPredictor(Global.Absolute(@"Assets\Model\Domain\bgi_tree.onnx"));
         _config = TaskContext.Instance().Config.AutoDomainConfig;
 
         _combatScriptBag = CombatScriptParser.ReadAndParse(_taskParam.CombatStrategyPath);
@@ -161,9 +157,10 @@ public class AutoDomainTask : ISoloTask
                 {
                     Logger.LogInformation("体力已经耗尽，结束自动秘境");
                 }
-                
+
                 break;
             }
+
             Notify.Event(NotificationEvent.DomainReward).Success("自动秘境奖励领取");
         }
     }
@@ -186,13 +183,15 @@ public class AutoDomainTask : ISoloTask
         var gameScreenSize = SystemControl.GetGameScreenRect(TaskContext.Instance().GameHandle);
         if (gameScreenSize.Width * 9 != gameScreenSize.Height * 16)
         {
-            Logger.LogError("游戏窗口分辨率不是 16:9 ！当前分辨率为 {Width}x{Height} , 非 16:9 分辨率的游戏无法正常使用自动秘境功能 !", gameScreenSize.Width, gameScreenSize.Height);
+            Logger.LogError("游戏窗口分辨率不是 16:9 ！当前分辨率为 {Width}x{Height} , 非 16:9 分辨率的游戏无法正常使用自动秘境功能 !",
+                gameScreenSize.Width, gameScreenSize.Height);
             throw new Exception("游戏窗口分辨率不是 16:9");
         }
 
         if (gameScreenSize.Width < 1920 || gameScreenSize.Height < 1080)
         {
-            Logger.LogWarning("游戏窗口分辨率小于 1920x1080 ！当前分辨率为 {Width}x{Height} , 小于 1920x1080 的分辨率的游戏可能无法正常使用自动秘境功能 !", gameScreenSize.Width, gameScreenSize.Height);
+            Logger.LogWarning("游戏窗口分辨率小于 1920x1080 ！当前分辨率为 {Width}x{Height} , 小于 1920x1080 的分辨率的游戏可能无法正常使用自动秘境功能 !",
+                gameScreenSize.Width, gameScreenSize.Height);
         }
     }
 
@@ -288,7 +287,7 @@ public class AutoDomainTask : ISoloTask
         var fightAssets = AutoFightAssets.Instance;
 
         // 进入秘境
-        for (int i = 0; i < 3; i++)  // 3次重试 有时候会拾取晶蝶
+        for (int i = 0; i < 3; i++) // 3次重试 有时候会拾取晶蝶
         {
             using var fRectArea = CaptureToRectArea().Find(AutoPickAssets.Instance.PickRo);
             if (!fRectArea.IsEmpty())
@@ -449,7 +448,6 @@ public class AutoDomainTask : ISoloTask
 
     private void EndFightWait()
     {
-        
         if (_ct.IsCancellationRequested)
         {
             return;
@@ -598,7 +596,7 @@ public class AutoDomainTask : ISoloTask
             while (!_ct.IsCancellationRequested)
             {
                 var treeRect = DetectTree(CaptureToRectArea());
-                if (treeRect != Rect.Empty)
+                if (treeRect != default)
                 {
                     var treeMiddleX = treeRect.X + treeRect.Width / 2;
                     if (treeRect.X + treeRect.Width < middleX && !_config.ShortMovement)
@@ -663,7 +661,7 @@ public class AutoDomainTask : ISoloTask
                             }
 
                             Simulation.SendInput.Keyboard.KeyDown(moveLeftKey);
-                            Sleep(60); 
+                            Sleep(60);
                             Simulation.SendInput.Keyboard.KeyUp(moveLeftKey);
                             prevKey = moveLeftKey;
                         }
@@ -675,14 +673,14 @@ public class AutoDomainTask : ISoloTask
                             }
 
                             Simulation.SendInput.Keyboard.KeyDown(moveRightKey);
-                            Sleep(60); 
+                            Sleep(60);
                             Simulation.SendInput.Keyboard.KeyUp(moveRightKey);
                             prevKey = moveRightKey;
                         }
                         else
                         {
                             Simulation.SendInput.Keyboard.KeyDown(moveForwardKey);
-                            Sleep(60); 
+                            Sleep(60);
                             Simulation.SendInput.Keyboard.KeyUp(moveForwardKey);
                             Sleep(500, _ct);
                             treeCts.Cancel();
@@ -729,7 +727,7 @@ public class AutoDomainTask : ISoloTask
                 {
                     // 左右移动5次说明已经在树中心了
                     Simulation.SendInput.Keyboard.KeyDown(moveForwardKey);
-                    Sleep(60); 
+                    Sleep(60);
                     Simulation.SendInput.Keyboard.KeyUp(moveForwardKey);
                     Sleep(500, _ct);
                     treeCts.Cancel();
@@ -750,7 +748,7 @@ public class AutoDomainTask : ISoloTask
         memoryStream.Seek(0, SeekOrigin.Begin);
         var result = _predictor.Detect(memoryStream);
         var list = new List<RectDrawable>();
-        foreach (var box in result.Boxes)
+        foreach (var box in result)
         {
             var rect = new Rect(box.Bounds.X, box.Bounds.Y, box.Bounds.Width, box.Bounds.Height);
             list.Add(region.ToRectDrawable(rect, "tree"));
@@ -760,11 +758,11 @@ public class AutoDomainTask : ISoloTask
 
         if (list.Count > 0)
         {
-            var box = result.Boxes[0];
+            var box = result[0];
             return new Rect(box.Bounds.X, box.Bounds.Y, box.Bounds.Width, box.Bounds.Height);
         }
 
-        return Rect.Empty;
+        return default;
     }
 
     private Task LockCameraToEastTask(CancellationTokenSource cts, Task moveAvatarTask)
@@ -879,7 +877,8 @@ public class AutoDomainTask : ISoloTask
             using var ra = CaptureToRectArea();
 
             // OCR识别是否有跳过
-            var ocrList = ra.FindMulti(RecognitionObject.Ocr(captureArea.Width - 230 * assetScale, 0, 230 * assetScale - 5, 80 * assetScale));
+            var ocrList = ra.FindMulti(RecognitionObject.Ocr(captureArea.Width - 230 * assetScale, 0,
+                230 * assetScale - 5, 80 * assetScale));
             var skipTextRa = ocrList.FirstOrDefault(t => t.Text.Contains("跳过"));
             if (skipTextRa != null)
             {
@@ -948,7 +947,8 @@ public class AutoDomainTask : ISoloTask
         if (!condensedResinCountRa.IsEmpty())
         {
             // 图像右侧就是浓缩树脂数量
-            var countArea = ra.DeriveCrop(condensedResinCountRa.X + condensedResinCountRa.Width, condensedResinCountRa.Y, condensedResinCountRa.Width, condensedResinCountRa.Height);
+            var countArea = ra.DeriveCrop(condensedResinCountRa.X + condensedResinCountRa.Width,
+                condensedResinCountRa.Y, condensedResinCountRa.Width, condensedResinCountRa.Height);
             // Cv2.ImWrite($"log/resin_{DateTime.Now.ToString("yyyy-MM-dd HH：mm：ss：ffff")}.png", countArea.SrcGreyMat);
             var count = OcrFactory.Paddle.OcrWithoutDetector(countArea.SrcGreyMat);
             condensedResinCount = StringUtils.TryParseInt(count);
@@ -959,12 +959,14 @@ public class AutoDomainTask : ISoloTask
         if (!fragileResinCountRa.IsEmpty())
         {
             // 图像右侧就是脆弱树脂数量
-            var countArea = ra.DeriveCrop(fragileResinCountRa.X + fragileResinCountRa.Width, fragileResinCountRa.Y, (int)(fragileResinCountRa.Width * 3), fragileResinCountRa.Height);
+            var countArea = ra.DeriveCrop(fragileResinCountRa.X + fragileResinCountRa.Width, fragileResinCountRa.Y,
+                (int)(fragileResinCountRa.Width * 3), fragileResinCountRa.Height);
             var count = OcrFactory.Paddle.Ocr(countArea.SrcGreyMat);
             fragileResinCount = StringUtils.TryParseInt(count);
         }
 
-        Logger.LogInformation("剩余：浓缩树脂 {CondensedResinCount} 脆弱树脂 {FragileResinCount}", condensedResinCount, fragileResinCount);
+        Logger.LogInformation("剩余：浓缩树脂 {CondensedResinCount} 脆弱树脂 {FragileResinCount}", condensedResinCount,
+            fragileResinCount);
         return (condensedResinCount, fragileResinCount);
     }
 

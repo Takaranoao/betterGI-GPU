@@ -1,7 +1,6 @@
 ﻿using BetterGenshinImpact.Core.Config;
 using BetterGenshinImpact.Core.Recognition;
 using BetterGenshinImpact.Core.Recognition.OCR;
-using BetterGenshinImpact.Core.Recognition.ONNX.SVTR;
 using BetterGenshinImpact.Core.Recognition.OpenCv;
 using BetterGenshinImpact.Core.Script.Dependence.Model.TimerConfig;
 using BetterGenshinImpact.Core.Simulator;
@@ -22,7 +21,6 @@ namespace BetterGenshinImpact.GameTask.AutoPick;
 public partial class AutoPickTrigger : ITaskTrigger
 {
     private readonly ILogger<AutoPickTrigger> _logger = App.GetLogger<AutoPickTrigger>();
-    private readonly ITextInference _pickTextInference = TextInferenceFactory.Pick;
 
     public string Name => "自动拾取";
     public bool IsEnabled { get; set; }
@@ -40,7 +38,7 @@ public partial class AutoPickTrigger : ITaskTrigger
     /// 拾取白名单
     /// </summary>
     private List<string> _whiteList = [];
-    
+
     private RecognitionObject _pickRo;
 
     // 外部配置
@@ -121,7 +119,9 @@ public partial class AutoPickTrigger : ITaskTrigger
 
             // 识别到拾取键，开始识别物品图标
             var isExcludeIcon = false;
-            _autoPickAssets.ChatIconRo.RegionOfInterest = new Rect(foundRectArea.X + (int)(config.ItemIconLeftOffset * scale), foundRectArea.Y, (int)((config.ItemTextLeftOffset - config.ItemIconLeftOffset) * scale), foundRectArea.Height);
+            _autoPickAssets.ChatIconRo.RegionOfInterest = new Rect(
+                foundRectArea.X + (int)(config.ItemIconLeftOffset * scale), foundRectArea.Y,
+                (int)((config.ItemTextLeftOffset - config.ItemIconLeftOffset) * scale), foundRectArea.Height);
             var chatIconRa = content.CaptureRectArea.Find(_autoPickAssets.ChatIconRo);
             speedTimer.Record("识别聊天图标");
             if (!chatIconRa.IsEmpty())
@@ -165,18 +165,7 @@ public partial class AutoPickTrigger : ITaskTrigger
             }
 
             var textMat = new Mat(content.CaptureRectArea.SrcGreyMat, textRect);
-
-            string text;
-            if (config.OcrEngine == PickOcrEngineEnum.Yap.ToString())
-            {
-                var paddedMat = PreProcessForInference(textMat);
-                text = _pickTextInference.Inference(paddedMat);
-            }
-            else
-            {
-                text = OcrFactory.Paddle.Ocr(textMat);
-            }
-
+            var text = OcrFactory.Paddle.Ocr(textMat);
             speedTimer.Record("文字识别");
             if (!string.IsNullOrEmpty(text))
             {
@@ -186,8 +175,10 @@ public partial class AutoPickTrigger : ITaskTrigger
                 {
                     return;
                 }
+
                 // 纳塔部落中文名特殊处理，不拾取
-                if (text.Contains("我在") && (text.Contains("声望") || text.Contains("回声") || text.Contains("悬木人") || text.Contains("流泉")))
+                if (text.Contains("我在") && (text.Contains("声望") || text.Contains("回声") || text.Contains("悬木人") ||
+                                            text.Contains("流泉")))
                 {
                     return;
                 }
@@ -227,6 +218,7 @@ public partial class AutoPickTrigger : ITaskTrigger
         speedTimer.DebugPrint();
     }
 
+    [Obsolete]
     private Mat PreProcessForInference(Mat mat)
     {
         // Yap 已经改用灰度图了 https://github.com/Alex-Beng/Yap/commit/c2ad1e7b1442aaf2d80782a032e00876cd1c6c84

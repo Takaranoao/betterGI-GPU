@@ -653,7 +653,7 @@ public class TpTask(CancellationToken ct)
             if (mapScaleButtonRa.IsExist())
             {
                 rect = BigMap.Instance.GetBigMapRectByFeatureMatch(ra.SrcGreyMat);
-                if (rect == Rect.Empty)
+                if (rect == default)
                 {
                     // 滚轮调整后再次识别
                     Simulation.SendInput.Mouse.VerticalScroll(2);
@@ -667,7 +667,7 @@ public class TpTask(CancellationToken ct)
             }
         }, TimeSpan.FromMilliseconds(500), 5);
 
-        if (rect == Rect.Empty)
+        if (rect == default)
         {
             throw new InvalidOperationException("多次重试后，识别大地图位置失败");
         }

@@ -29,9 +29,11 @@ namespace BetterGenshinImpact.UnitTest.GameTaskTests.AutoFishingTests
             var imageRegion = new ImageRegion(mat, 0, 0, new DesktopRegion(new FakeMouseSimulator()), converter: new ScaleConverter(1d));
 
             FakeSystemInfo systemInfo = new FakeSystemInfo(new Vanara.PInvoke.RECT(0, 0, mat.Width, mat.Height), 1);
+
             var blackboard = new Blackboard(sleep: i => { })
             {
-                fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, OpenCvSharp.Rect.Empty, 0)).ToList())
+                
+                fishpond = new Fishpond(fishNames.Select(n => new OneFish(n,new Rect(), 0)).ToList())
             };
 
             //
@@ -62,7 +64,7 @@ namespace BetterGenshinImpact.UnitTest.GameTaskTests.AutoFishingTests
             FakeSystemInfo systemInfo = new FakeSystemInfo(new Vanara.PInvoke.RECT(0, 0, mat.Width, mat.Height), 1);
             var blackboard = new Blackboard(sleep: i => { })
             {
-                fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, OpenCvSharp.Rect.Empty, 0)).ToList())
+                fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, new OpenCvSharp.Rect(), 0)).ToList())
             };
 
             DateTimeOffset dateTime = new DateTimeOffset(2025, 2, 26, 16, 13, 54, 285, TimeSpan.FromHours(8));
@@ -116,7 +118,7 @@ namespace BetterGenshinImpact.UnitTest.GameTaskTests.AutoFishingTests
             FakeSystemInfo systemInfo = new FakeSystemInfo(new Vanara.PInvoke.RECT(0, 0, mat.Width, mat.Height), 1);
             var blackboard = new Blackboard(sleep: i => { })
             {
-                fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, OpenCvSharp.Rect.Empty, 0)).ToList())
+                fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, new OpenCvSharp.Rect(), 0)).ToList())
             };
 
             DateTimeOffset dateTime = new DateTimeOffset(2025, 2, 26, 16, 13, 54, 285, TimeSpan.FromHours(8));
@@ -155,7 +157,7 @@ namespace BetterGenshinImpact.UnitTest.GameTaskTests.AutoFishingTests
             #region medaka受到遮挡，第3次失败
             //
             fishNames = new string[] { "koi", "koi head", "sunfish" };
-            blackboard.fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, OpenCvSharp.Rect.Empty, 0)).ToList());
+            blackboard.fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, new OpenCvSharp.Rect(), 0)).ToList());
             sut.Reset();
             fakeTimeProvider.SetUtcNow(dateTime.AddSeconds(20));
 
@@ -173,7 +175,7 @@ namespace BetterGenshinImpact.UnitTest.GameTaskTests.AutoFishingTests
             #region sunfish受到遮挡，medaka再次出现，第4次成功，并钓起medaka
             //
             fishNames = new string[] { "koi", "koi head", "medaka" };
-            blackboard.fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, OpenCvSharp.Rect.Empty, 0)).ToList());
+            blackboard.fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, new OpenCvSharp.Rect(), 0)).ToList());
             sut.Reset();
             fakeTimeProvider.SetUtcNow(dateTime.AddSeconds(30));
 
@@ -191,7 +193,7 @@ namespace BetterGenshinImpact.UnitTest.GameTaskTests.AutoFishingTests
             #region sunfish再次出现，第5次失败
             //
             fishNames = new string[] { "koi", "koi head", "sunfish" };
-            blackboard.fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, OpenCvSharp.Rect.Empty, 0)).ToList());
+            blackboard.fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, new OpenCvSharp.Rect(), 0)).ToList());
             sut.Reset();
             fakeTimeProvider.SetUtcNow(dateTime.AddSeconds(40));
 
@@ -222,7 +224,7 @@ namespace BetterGenshinImpact.UnitTest.GameTaskTests.AutoFishingTests
             IEnumerable<string> fishNames = new string[] { "koi", "koi head", "sunfish" };
             var blackboard = new Blackboard(sleep: i => { })
             {
-                fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, OpenCvSharp.Rect.Empty, 0)).ToList())
+                fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, new OpenCvSharp.Rect(), 0)).ToList())
             };
 
             DateTimeOffset dateTime = new DateTimeOffset(2025, 2, 26, 16, 13, 54, 285, TimeSpan.FromHours(8));
@@ -244,7 +246,7 @@ namespace BetterGenshinImpact.UnitTest.GameTaskTests.AutoFishingTests
             #region koi受到遮挡，第2次失败
             //
             fishNames = new string[] { "sunfish" };
-            blackboard.fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, OpenCvSharp.Rect.Empty, 0)).ToList());
+            blackboard.fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, new OpenCvSharp.Rect(), 0)).ToList());
             sut.Reset();
             fakeTimeProvider.SetUtcNow(dateTime.AddSeconds(10));
 
@@ -263,7 +265,7 @@ namespace BetterGenshinImpact.UnitTest.GameTaskTests.AutoFishingTests
             #region koi再次出现，第3次失败
             //
             fishNames = new string[] { "koi", "koi head", "sunfish" };
-            blackboard.fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, OpenCvSharp.Rect.Empty, 0)).ToList());
+            blackboard.fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, new OpenCvSharp.Rect(), 0)).ToList());
             sut.Reset();
             fakeTimeProvider.SetUtcNow(dateTime.AddSeconds(20));
 
@@ -281,7 +283,7 @@ namespace BetterGenshinImpact.UnitTest.GameTaskTests.AutoFishingTests
             #region 第4次失败
             //
             fishNames = new string[] { "koi", "koi head", "sunfish" };
-            blackboard.fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, OpenCvSharp.Rect.Empty, 0)).ToList());
+            blackboard.fishpond = new Fishpond(fishNames.Select(n => new OneFish(n, new OpenCvSharp.Rect(), 0)).ToList());
             sut.Reset();
             fakeTimeProvider.SetUtcNow(dateTime.AddSeconds(40));
 

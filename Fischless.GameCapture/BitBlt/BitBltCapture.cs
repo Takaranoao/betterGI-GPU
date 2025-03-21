@@ -74,7 +74,7 @@ public class BitBltCapture : IGameCapture
 
                 Gdi32.StretchBlt(hdcDest, 0, 0, width, height, hdcSrc, x, y, width, height, Gdi32.RasterOperationMode.SRCCOPY);
 
-                var mat = new Mat(height, width, MatType.CV_8UC4, bits);
+                var mat = Mat.FromPixelData(height, width, MatType.CV_8UC4, bits);
                 Mat bgrMat = new Mat();
                 Cv2.CvtColor(mat, bgrMat, ColorConversionCodes.BGRA2BGR);
 

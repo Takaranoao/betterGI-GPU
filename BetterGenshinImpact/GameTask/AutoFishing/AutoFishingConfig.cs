@@ -22,7 +22,7 @@ public partial class AutoFishingConfig : ObservableObject
     ///// 鱼儿上钩文字识别区域
     ///// 暂时无用
     ///// </summary>
-    //[ObservableProperty] private Rect _fishHookedRecognitionArea = Rect.Empty;
+    //[ObservableProperty] private Rect _fishHookedRecognitionArea = default;
 
     /// <summary>
     /// 自动抛竿是否启用
