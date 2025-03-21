@@ -329,11 +329,21 @@ public class AutoDomainTask : ISoloTask
         while (retryTimes < 120)
         {
             retryTimes++;
-            using var cactRectArea = CaptureToRectArea().Find(AutoFightAssets.Instance.ClickAnyCloseTipRa);
-            if (!cactRectArea.IsEmpty())
+            using var ra = CaptureToRectArea();
+            // using var cactRectArea =ra.Find(AutoFightAssets.Instance.ClickAnyCloseTipRa);
+            // if (!cactRectArea.IsEmpty())
+            // {
+            //     await Delay(1000, _ct);
+            //     cactRectArea.Click();
+            //     break;
+            // }
+
+            var ocrList = ra.FindMulti(RecognitionObject.Ocr(0, ra.Height * 0.2, ra.Width, ra.Height * 0.6));
+            var done = ocrList.FirstOrDefault(txt => txt.Text.Contains("地脉异常") || txt.Text.Contains("点击任意") || txt.Text.Contains("位置关闭"));
+            if (done != null)
             {
                 await Delay(1000, _ct);
-                cactRectArea.Click();
+                done.Click();
                 break;
             }
 
