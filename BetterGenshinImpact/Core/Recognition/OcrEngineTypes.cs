@@ -7,7 +7,7 @@ public enum OcrEngineTypes
     Paddle,
 
     // 特定模型
-    YasModel,
+    // YasModel,
 
-    YapModel
+    Yap
 }

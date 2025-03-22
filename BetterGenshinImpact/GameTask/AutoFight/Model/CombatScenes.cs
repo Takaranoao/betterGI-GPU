@@ -39,8 +39,8 @@ public class CombatScenes : IDisposable
 
     public int AvatarCount { get; set; }
 
-    private readonly BgiYoloPredictor _predictor = BgiYoloPredictorFactory.GetPredictor(
-        Global.Absolute(@"Assets\Model\Common\avatar_side_classify_sim.onnx"));
+    private readonly BgiYoloPredictor _predictor = BgiOnnxFactory.GetYoloPredictor(
+        @"Assets\Model\Common\avatar_side_classify_sim.onnx");
 
     public int ExpectedTeamAvatarNum { get; private set; } = 4;
 
@@ -312,7 +312,7 @@ public class CombatScenes : IDisposable
             OpenCvCommonHelper.InRangeHsv(teamRa.SrcMat, new Scalar(0, 0, 210), new Scalar(255, 30, 255));
 
         // 识别队伍内角色
-        var result = OcrFactory.Paddle.OcrResult(hsvFilterMat);
+        var result = OcrFactory.Ocr.OcrResult(hsvFilterMat);
         ParseTeamOcrResult(result, teamRa);
         return this;
     }

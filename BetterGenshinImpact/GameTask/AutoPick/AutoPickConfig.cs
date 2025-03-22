@@ -30,14 +30,6 @@ namespace BetterGenshinImpact.GameTask.AutoPick
         [ObservableProperty] private int _itemTextRightOffset = 400;
 
         /// <summary>
-        /// 文字识别引擎
-        /// - Paddle
-        /// - Yap
-        /// </summary>
-        [ObservableProperty]
-        private string _ocrEngine = PickOcrEngineEnum.Paddle.ToString();
-
-        /// <summary>
         /// 急速模式
         /// 无视文字识别结果，直接拾取
         /// </summary>

@@ -182,7 +182,7 @@ public class AutoFightTask : ISoloTask
 
         if (_taskParam.FightFinishDetectEnabled)
         {
-            _predictor = BgiYoloPredictorFactory.GetPredictor(@"Assets\Model\World\bgi_world.onnx");
+            _predictor = BgiOnnxFactory.GetYoloPredictor(@"Assets\Model\World\bgi_world.onnx");
         }
 
         _finishDetectConfig = new TaskFightFinishDetectConfig(_taskParam.FinishDetectConfig);

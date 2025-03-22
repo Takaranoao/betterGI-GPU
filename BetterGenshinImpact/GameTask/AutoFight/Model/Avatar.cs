@@ -452,7 +452,7 @@ public class Avatar
     {
         var eRa = imageRegion.DeriveCrop(AutoFightAssets.Instance.ECooldownRect);
         var eRaWhite = OpenCvCommonHelper.InRangeHsv(eRa.SrcMat, new Scalar(0, 0, 235), new Scalar(0, 25, 255));
-        var text = OcrFactory.Paddle.OcrWithoutDetector(eRaWhite);
+        var text = OcrFactory.Ocr.OcrWithoutDetector(eRaWhite);
         var cd = StringUtils.TryParseDouble(text);
         if (cd > 0 && cd <= SkillCd)
         {

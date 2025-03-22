@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Vanara.PInvoke;
 
 namespace BetterGenshinImpact.GameTask.AutoPick;
 
@@ -165,7 +164,7 @@ public partial class AutoPickTrigger : ITaskTrigger
             }
 
             var textMat = new Mat(content.CaptureRectArea.SrcGreyMat, textRect);
-            var text = OcrFactory.Paddle.Ocr(textMat);
+            var text = OcrFactory.Ocr.Ocr(textMat);
             speedTimer.Record("文字识别");
             if (!string.IsNullOrEmpty(text))
             {

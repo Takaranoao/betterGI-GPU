@@ -92,33 +92,6 @@
                     <ui:TextBlock Grid.Row="0"
                                   Grid.Column="0"
                                   FontTypography="Body"
-                                  Text="选择自动拾取文字识别引擎"
-                                  TextWrapping="Wrap" />
-                    <ui:TextBlock Grid.Row="1"
-                                  Grid.Column="0"
-                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="Paddle可识别所有文字,速度慢,消耗少;Yap可识别部分文字,快且准,消耗大"
-                                  TextWrapping="Wrap" />
-                    <ComboBox Grid.Row="0"
-                              Grid.RowSpan="2"
-                              Grid.Column="1"
-                              Width="100"
-                              Margin="0,0,36,0"
-                              ItemsSource="{Binding PickOcrEngineNames}"
-                              SelectedItem="{Binding Config.AutoPickConfig.OcrEngine, Mode=TwoWay}" />
-                </Grid>
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock Grid.Row="0"
-                                  Grid.Column="0"
-                                  FontTypography="Body"
                                   Text="黑名单（修改后需要重启软件生效）"
                                   TextWrapping="Wrap" />
                     <ui:TextBlock Grid.Row="1"
@@ -745,8 +718,8 @@
                 </Grid>
             </StackPanel>
         </ui:CardExpander>
-        
-        
+
+
         <!--  自动烹饪  -->
         <ui:CardControl Margin="0,0,0,12">
             <ui:CardControl.Icon>

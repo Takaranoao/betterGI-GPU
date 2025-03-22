@@ -207,7 +207,7 @@ public class ImageRegion : Region
                 roi = new Mat(SrcGreyMat, ro.RegionOfInterest);
             }
 
-            var result = OcrFactory.Paddle.OcrResult(roi);
+            var result = OcrFactory.Ocr.OcrResult(roi);
             var text = StringUtils.RemoveAllSpace(result.Text);
             // 替换可能出错的文本
             foreach (var entry in ro.ReplaceDictionary)
@@ -300,7 +300,7 @@ public class ImageRegion : Region
                 }
             }
 
-            var result = OcrFactory.Paddle.OcrResult(roi);
+            var result = OcrFactory.Ocr.OcrResult(roi);
             var text = StringUtils.RemoveAllSpace(result.Text);
 
             if (!string.IsNullOrEmpty(text))
@@ -424,7 +424,7 @@ public class ImageRegion : Region
                 roi = new Mat(SrcGreyMat, ro.RegionOfInterest);
             }
 
-            var result = OcrFactory.Paddle.OcrResult(roi);
+            var result = OcrFactory.Ocr.OcrResult(roi);
 
             if (result.Regions.Length > 0)
             {

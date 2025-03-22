@@ -684,7 +684,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
         private readonly Blackboard blackboard;
         private readonly IInputSimulator input;
         private readonly DrawContent drawContent;
-        private readonly IOcrService ocrService = OcrFactory.Paddle;
+        private readonly IOcrService ocrService = OcrFactory.Ocr;
         public FishBite(string name, Blackboard blackboard, ILogger logger, bool saveScreenshotOnTerminat, IInputSimulator input, DrawContent? drawContent = null) : base(name, logger, saveScreenshotOnTerminat)
         {
             this.blackboard = blackboard;

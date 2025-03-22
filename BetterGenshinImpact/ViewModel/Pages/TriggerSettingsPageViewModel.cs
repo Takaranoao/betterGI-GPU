@@ -1,5 +1,4 @@
 ﻿using BetterGenshinImpact.Core.Config;
-using BetterGenshinImpact.GameTask.AutoPick;
 using BetterGenshinImpact.GameTask.AutoSkip.Assets;
 using BetterGenshinImpact.GameTask.AutoSkip.Model;
 using BetterGenshinImpact.Service.Interface;
@@ -10,7 +9,6 @@ using CommunityToolkit.Mvvm.Input;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Wpf.Ui;
-using Wpf.Ui.Controls;
 
 namespace BetterGenshinImpact.ViewModel.Pages;
 
@@ -21,10 +19,6 @@ public partial class TriggerSettingsPageViewModel : ViewModel
 
     [ObservableProperty]
     private string[] _selectChatOptionTypeNames = [SelectChatOptionTypes.UseMouse, SelectChatOptionTypes.UseInteractionKey];
-
-    [ObservableProperty]
-    private string[] _pickOcrEngineNames = [PickOcrEngineEnum.Paddle.ToString(), PickOcrEngineEnum.Yap.ToString()];
-
     [ObservableProperty]
     private List<string> _pickButtonNames;
 

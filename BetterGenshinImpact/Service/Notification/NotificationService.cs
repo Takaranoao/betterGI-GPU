@@ -51,9 +51,15 @@ public class NotificationService : IHostedService, IDisposable
     /// </summary>
     public void Dispose()
     {
-        _webSocketCts?.Cancel();
-        _webSocketCts?.Dispose();
-        _notifyHttpClient?.Dispose();
+        try
+        {
+            _webSocketCts?.Cancel();
+            _webSocketCts?.Dispose();
+            _notifyHttpClient?.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
         GC.SuppressFinalize(this);
     }
 

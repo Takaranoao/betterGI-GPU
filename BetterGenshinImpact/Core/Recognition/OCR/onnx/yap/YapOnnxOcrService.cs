@@ -22,10 +22,10 @@ public class YapOnnxOcrService : IOcrService
 
     public YapOnnxOcrService()
     {
-        var modelPath = Global.Absolute(@"Assets\Model\Yap\model_training.onnx");
-        if (!File.Exists(modelPath)) throw new FileNotFoundException("Yap模型文件不存在", modelPath);
-
-        _session = new InferenceSession(modelPath, BgiSessionOption.Instance.Options);
+        const string relativePath = @"Assets\Model\Yap\model_training.onnx";
+        if (!File.Exists(Global.Absolute(relativePath)))
+            throw new FileNotFoundException("Yap模型不存在", Global.Absolute(relativePath));
+        _session = BgiOnnxFactory.CreateInferenceSession(relativePath);
 
         var wordJsonPath = Global.Absolute(@"Assets\Model\Yap\index_2_word.json");
         if (!File.Exists(wordJsonPath)) throw new FileNotFoundException("Yap字典文件不存在", wordJsonPath);
@@ -94,7 +94,7 @@ public class YapOnnxOcrService : IOcrService
 
     public IOcrResult OcrResult(Mat mat)
     {
-        return OcrFactory.Paddle.OcrResult(mat);
+        return OcrFactory.Ocr.OcrResult(mat);
     }
 
     /// <summary>
@@ -118,6 +118,7 @@ public class YapOnnxOcrService : IOcrService
         {
             dst = rt.T(ResizeHelper.ResizeTo(inputImage, 221, 32));
         }
+
         // 填充到 384x32
         var padded = rt.NewMat(new Size(384, 32), MatType.CV_8UC1, Scalar.Black);
         padded[new Rect(0, 0, 221, 32)] = dst;

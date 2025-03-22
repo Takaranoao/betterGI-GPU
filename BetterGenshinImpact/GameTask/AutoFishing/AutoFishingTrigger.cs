@@ -10,7 +10,6 @@ using System;
 using Point = OpenCvSharp.Point;
 using Fischless.WindowsInput;
 using BetterGenshinImpact.GameTask.Model.Area;
-using BetterGenshinImpact.Core.Config;
 using BetterGenshinImpact.Core.Recognition.ONNX;
 
 namespace BetterGenshinImpact.GameTask.AutoFishing
@@ -40,7 +39,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
 
         public AutoFishingTrigger()
         {
-            var predictor = BgiYoloPredictorFactory.GetPredictor(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx"));
+            var predictor = BgiOnnxFactory.GetYoloPredictor(@"Assets\Model\Fish\bgi_fish.onnx");
             this.blackboard = new Blackboard(predictor.Predictor, this.Sleep, AutoFishingAssets.Instance);
 
             BehaviourTreeLaTiao = FluentBuilder.Create<ImageRegion>()

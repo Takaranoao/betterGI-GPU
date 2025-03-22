@@ -616,7 +616,7 @@ public partial class HotKeyPageViewModel : ObservableObject, IViewModel
                             var imageRegion = TaskControl.CaptureToRectArea();
                             var eRa = imageRegion.DeriveCrop(AutoFightAssets.Instance.ECooldownRect);
                             var eRaWhite = OpenCvCommonHelper.InRangeHsv(eRa.SrcMat, new Scalar(0, 0, 235), new Scalar(0, 25, 255));
-                            var text = OcrFactory.Paddle.OcrWithoutDetector(eRaWhite);
+                            var text = OcrFactory.Ocr.OcrWithoutDetector(eRaWhite);
                             TaskControl.Logger.LogInformation("冷却时间 {Num}", StringUtils.TryParseDouble(text));
                             await Task.Delay(10);
                         }

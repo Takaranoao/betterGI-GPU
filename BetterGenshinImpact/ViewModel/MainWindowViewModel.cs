@@ -222,7 +222,7 @@ public partial class MainWindowViewModel : ObservableObject, IViewModel
             {
                 try
                 {
-                    var s = OcrFactory.Paddle.Ocr(new Mat(Global.Absolute(@"Assets\Model\PaddleOCR\test_ocr.png"), ImreadModes.Grayscale));
+                    var s = OcrFactory.Ocr.Ocr(new Mat(Global.Absolute(@"Assets\Model\PaddleOCR\test_ocr.png"), ImreadModes.Grayscale));
                     Debug.WriteLine("PaddleOcr预热结果:" + s);
                 }
                 catch (Exception e)

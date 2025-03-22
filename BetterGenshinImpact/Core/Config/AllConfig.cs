@@ -65,11 +65,6 @@ public partial class AllConfig : ObservableObject
     [ObservableProperty]
     private bool _autoFixWin11BitBlt = true;
 
-    /// <summary>
-    /// 推理使用的设备
-    /// </summary>
-    [ObservableProperty]
-    private DeviceType _inferenceDevice = DeviceType.Cpu;
 
     [ObservableProperty]
     private List<ValueTuple<string, int, string, string>> _nextScheduledTask = [];
@@ -180,6 +175,10 @@ public partial class AllConfig : ObservableObject
     /// 其他配置
     /// </summary>
     public OtherConfig OtherConfig { get; set; } = new();
+    /// <summary>
+    /// 硬件加速设置
+    /// </summary>
+    public HardwareAccelerationConfig HardwareAccelerationConfig { get; set; } = new();
     /// <summary>
     /// 传送相关配置
     /// </summary>

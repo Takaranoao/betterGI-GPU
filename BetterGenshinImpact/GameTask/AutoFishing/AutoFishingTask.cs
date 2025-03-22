@@ -48,7 +48,7 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
             this._ct = ct;
 
             var predictor =
-                BgiYoloPredictorFactory.GetPredictor(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx"));
+                BgiOnnxFactory.GetYoloPredictor(@"Assets\Model\Fish\bgi_fish.onnx");
             Blackboard blackboard = new Blackboard(predictor.Predictor, this.Sleep, AutoFishingAssets.Instance);
 
             // @formatter:off

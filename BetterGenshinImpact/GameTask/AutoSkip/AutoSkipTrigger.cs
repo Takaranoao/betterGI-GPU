@@ -304,7 +304,7 @@ public partial class AutoSkipTrigger : ITaskTrigger
             // OCR识别选项文字
             foreach (var hangoutOption in hangoutOptionList)
             {
-                var text = OcrFactory.Paddle.Ocr(hangoutOption.TextRect!.SrcGreyMat);
+                var text = OcrFactory.Ocr.Ocr(hangoutOption.TextRect!.SrcGreyMat);
                 hangoutOption.OptionTextSrc = StringUtils.RemoveAllEnter(text);
             }
 

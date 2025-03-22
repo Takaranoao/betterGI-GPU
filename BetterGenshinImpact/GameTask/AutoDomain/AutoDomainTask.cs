@@ -56,7 +56,7 @@ public class AutoDomainTask : ISoloTask
     {
         AutoFightAssets.DestroyInstance();
         _taskParam = taskParam;
-        _predictor = BgiYoloPredictorFactory.GetPredictor(Global.Absolute(@"Assets\Model\Domain\bgi_tree.onnx"));
+        _predictor = BgiOnnxFactory.GetYoloPredictor(@"Assets\Model\Domain\bgi_tree.onnx");
         _config = TaskContext.Instance().Config.AutoDomainConfig;
 
         _combatScriptBag = CombatScriptParser.ReadAndParse(_taskParam.CombatStrategyPath);
@@ -502,7 +502,7 @@ public class AutoDomainTask : ISoloTask
         using var ra = CaptureToRectArea();
 
         var endTipsRect = ra.DeriveCrop(AutoFightAssets.Instance.EndTipsUpperRect);
-        var text = OcrFactory.Paddle.Ocr(endTipsRect.SrcGreyMat);
+        var text = OcrFactory.Ocr.Ocr(endTipsRect.SrcGreyMat);
         if (text.Contains("挑战") || text.Contains("达成"))
         {
             Logger.LogInformation("检测到秘境结束提示(挑战达成)，结束秘境");
@@ -510,7 +510,7 @@ public class AutoDomainTask : ISoloTask
         }
 
         endTipsRect = ra.DeriveCrop(AutoFightAssets.Instance.EndTipsRect);
-        text = OcrFactory.Paddle.Ocr(endTipsRect.SrcGreyMat);
+        text = OcrFactory.Ocr.Ocr(endTipsRect.SrcGreyMat);
         if (text.Contains("自动") || text.Contains("退出"))
         {
             Logger.LogInformation("检测到秘境结束提示(xxx秒后自动退出)，结束秘境");
@@ -564,7 +564,7 @@ public class AutoDomainTask : ISoloTask
         // 识别道具图标下是否是数字
         var s = TaskContext.Instance().SystemInfo.AssetScale;
         var countArea = ra.DeriveCrop(1800 * s, 845 * s, 40 * s, 20 * s);
-        var count = OcrFactory.Paddle.OcrWithoutDetector(countArea.SrcGreyMat);
+        var count = OcrFactory.Ocr.OcrWithoutDetector(countArea.SrcGreyMat);
         return int.TryParse(count, out _);
     }
 
@@ -960,7 +960,7 @@ public class AutoDomainTask : ISoloTask
             var countArea = ra.DeriveCrop(condensedResinCountRa.X + condensedResinCountRa.Width,
                 condensedResinCountRa.Y, condensedResinCountRa.Width, condensedResinCountRa.Height);
             // Cv2.ImWrite($"log/resin_{DateTime.Now.ToString("yyyy-MM-dd HH：mm：ss：ffff")}.png", countArea.SrcGreyMat);
-            var count = OcrFactory.Paddle.OcrWithoutDetector(countArea.SrcGreyMat);
+            var count = OcrFactory.Ocr.OcrWithoutDetector(countArea.SrcGreyMat);
             condensedResinCount = StringUtils.TryParseInt(count);
         }
 
@@ -971,7 +971,7 @@ public class AutoDomainTask : ISoloTask
             // 图像右侧就是脆弱树脂数量
             var countArea = ra.DeriveCrop(fragileResinCountRa.X + fragileResinCountRa.Width, fragileResinCountRa.Y,
                 (int)(fragileResinCountRa.Width * 3), fragileResinCountRa.Height);
-            var count = OcrFactory.Paddle.Ocr(countArea.SrcGreyMat);
+            var count = OcrFactory.Ocr.Ocr(countArea.SrcGreyMat);
             fragileResinCount = StringUtils.TryParseInt(count);
         }
 

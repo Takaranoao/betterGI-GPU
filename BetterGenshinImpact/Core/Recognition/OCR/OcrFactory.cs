@@ -1,23 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 using BetterGenshinImpact.Core.Recognition.OCR.onnx.yap;
+using BetterGenshinImpact.GameTask;
 
 namespace BetterGenshinImpact.Core.Recognition.OCR;
 
 public class OcrFactory
 {
-    // public static IOcrService Media = Create(OcrEngineTypes.Media);
-    public static readonly IOcrService Paddle = Create(OcrEngineTypes.Paddle);
+    public static IOcrService Ocr =>
+        Get(TaskContext.Instance().Config.HardwareAccelerationConfig.OcrEngine);
 
-    public static readonly IOcrService Yap = Create(OcrEngineTypes.YapModel);
+    private static YapOnnxOcrService? _yapOnnxOcrService;
+    private static PaddleOcrService? _paddleOcrService;
 
 
-    private static IOcrService Create(OcrEngineTypes type)
+    public static IOcrService Get(OcrEngineTypes ocrEngine)
     {
-        return type switch
+        return ocrEngine switch
         {
-            OcrEngineTypes.Paddle => new PaddleOcrService(),
-            OcrEngineTypes.YapModel => new YapOnnxOcrService(),
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
+            OcrEngineTypes.Yap => _yapOnnxOcrService ??= new YapOnnxOcrService(),
+            OcrEngineTypes.Paddle => _paddleOcrService ??= new PaddleOcrService(),
+            _ => throw new ArgumentOutOfRangeException(nameof(ocrEngine), ocrEngine, null)
         };
     }
 }

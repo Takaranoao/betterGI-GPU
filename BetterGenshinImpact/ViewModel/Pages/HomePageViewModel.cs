@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 using Windows.System;
+using BetterGenshinImpact.Core.Recognition;
 
 namespace BetterGenshinImpact.ViewModel.Pages;
 
@@ -57,7 +58,7 @@ public partial class HomePageViewModel : ViewModel
     private IntPtr _hWnd;
 
     // 这两个不会变
-
+    public static OcrEngineTypes[] OcrEngineTypes => Enum.GetValues<OcrEngineTypes>();
     public static DeviceType[] InferenceDeviceTypes => Enum.GetValues<DeviceType>();
 
     public string InferenceFeatureTypes =>

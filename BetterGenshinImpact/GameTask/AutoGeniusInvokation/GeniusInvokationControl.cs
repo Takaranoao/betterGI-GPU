@@ -1125,7 +1125,7 @@ public class GeniusInvokationControl
             var hpMat = new Mat(srcMat, new Rect(cardRect.X + _config.CharacterCardExtendHpRect.X,
                 cardRect.Y + _config.CharacterCardExtendHpRect.Y,
                 _config.CharacterCardExtendHpRect.Width, _config.CharacterCardExtendHpRect.Height));
-            var text = OcrFactory.Paddle.Ocr(hpMat);
+            var text = OcrFactory.Ocr.Ocr(hpMat);
             //Cv2.ImWrite($"log\\hp_n_{i}.jpg", hpMat);
             Debug.WriteLine($"角色{i}未出战HP位置识别结果{text}");
             if (!string.IsNullOrWhiteSpace(text))
@@ -1138,7 +1138,7 @@ public class GeniusInvokationControl
                 hpMat = new Mat(srcMat, new Rect(cardRect.X + _config.CharacterCardExtendHpRect.X,
                     cardRect.Y + _config.CharacterCardExtendHpRect.Y - _config.ActiveCharacterCardSpace,
                     _config.CharacterCardExtendHpRect.Width, _config.CharacterCardExtendHpRect.Height));
-                text = OcrFactory.Paddle.Ocr(hpMat);
+                text = OcrFactory.Ocr.Ocr(hpMat);
                 //Cv2.ImWrite($"log\\hp_active_{i}.jpg", hpMat);
                 Debug.WriteLine($"角色{i}出战HP位置识别结果{text}");
                 if (!string.IsNullOrWhiteSpace(text))
@@ -1200,7 +1200,7 @@ public class GeniusInvokationControl
     {
         var srcMat = CaptureGameGreyMat();
         var diceCountMap = new Mat(srcMat, _config.MyDiceCountRect);
-        var text = OcrFactory.Paddle.OcrWithoutDetector(diceCountMap);
+        var text = OcrFactory.Ocr.OcrWithoutDetector(diceCountMap);
         text = text.Replace(" ", "")
             .Replace("①", "1")
             .Replace("②", "2")
