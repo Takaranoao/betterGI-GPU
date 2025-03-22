@@ -40,8 +40,8 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
 
         public AutoFishingTrigger()
         {
-            var predictor = BgiSessionOption.Instance.MakeYoloPredictor(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx"));
-            this.blackboard = new Blackboard(predictor, this.Sleep, AutoFishingAssets.Instance);
+            var predictor = BgiYoloPredictorFactory.GetPredictor(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx"));
+            this.blackboard = new Blackboard(predictor.Predictor, this.Sleep, AutoFishingAssets.Instance);
 
             BehaviourTreeLaTiao = FluentBuilder.Create<ImageRegion>()
                 .MySimpleParallel("root", policy: SimpleParallelPolicy.OnlyOneMustSucceed)

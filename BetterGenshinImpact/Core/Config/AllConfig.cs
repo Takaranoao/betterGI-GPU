@@ -16,7 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+using BetterGenshinImpact.Core.Recognition.ONNX;
 using BetterGenshinImpact.GameTask.AutoTrackPath;
 
 namespace BetterGenshinImpact.Core.Config;
@@ -69,7 +69,7 @@ public partial class AllConfig : ObservableObject
     /// 推理使用的设备
     /// </summary>
     [ObservableProperty]
-    private string _inferenceDevice = "CPU";
+    private DeviceType _inferenceDevice = DeviceType.Cpu;
 
     [ObservableProperty]
     private List<ValueTuple<string, int, string, string>> _nextScheduledTask = [];

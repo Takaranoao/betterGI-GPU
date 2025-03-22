@@ -48,8 +48,8 @@ namespace BetterGenshinImpact.GameTask.AutoFishing
             this._ct = ct;
 
             var predictor =
-                BgiSessionOption.Instance.MakeYoloPredictor(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx"));
-            Blackboard blackboard = new Blackboard(predictor, this.Sleep, AutoFishingAssets.Instance);
+                BgiYoloPredictorFactory.GetPredictor(Global.Absolute(@"Assets\Model\Fish\bgi_fish.onnx"));
+            Blackboard blackboard = new Blackboard(predictor.Predictor, this.Sleep, AutoFishingAssets.Instance);
 
             // @formatter:off
             var behaviourTree = FluentBuilder.Create<ImageRegion>()

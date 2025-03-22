@@ -15,8 +15,10 @@ namespace BetterGenshinImpact.Core.Recognition.ONNX;
 
 public class BgiYoloPredictor(string modelRelativePath) : IDisposable
 {
-    private readonly YoloPredictor _predictor = BgiSessionOption.Instance
-        .MakeYoloPredictor(Global.Absolute(modelRelativePath));
+    private readonly YoloPredictor _predictor = new(Global.Absolute(modelRelativePath), new YoloPredictorOptions
+    {
+        SessionOptions = BgiSessionOption.Instance.Options
+    });
 
     public YoloPredictor Predictor => _predictor;
 

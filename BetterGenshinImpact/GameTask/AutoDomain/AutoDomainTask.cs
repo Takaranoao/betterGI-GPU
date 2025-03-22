@@ -44,7 +44,7 @@ public class AutoDomainTask : ISoloTask
 
     private readonly AutoDomainParam _taskParam;
 
-    private readonly YoloPredictor _predictor;
+    private readonly BgiYoloPredictor _predictor;
 
     private readonly AutoDomainConfig _config;
 
@@ -56,7 +56,7 @@ public class AutoDomainTask : ISoloTask
     {
         AutoFightAssets.DestroyInstance();
         _taskParam = taskParam;
-        _predictor = BgiSessionOption.Instance.MakeYoloPredictor(Global.Absolute(@"Assets\Model\Domain\bgi_tree.onnx"));
+        _predictor = BgiYoloPredictorFactory.GetPredictor(Global.Absolute(@"Assets\Model\Domain\bgi_tree.onnx"));
         _config = TaskContext.Instance().Config.AutoDomainConfig;
 
         _combatScriptBag = CombatScriptParser.ReadAndParse(_taskParam.CombatStrategyPath);
@@ -756,7 +756,7 @@ public class AutoDomainTask : ISoloTask
         using var memoryStream = new MemoryStream();
         region.SrcBitmap.Save(memoryStream, ImageFormat.Bmp);
         memoryStream.Seek(0, SeekOrigin.Begin);
-        var result = _predictor.Detect(memoryStream);
+        var result = _predictor.Predictor.Detect(memoryStream);
         var list = new List<RectDrawable>();
         foreach (var box in result)
         {

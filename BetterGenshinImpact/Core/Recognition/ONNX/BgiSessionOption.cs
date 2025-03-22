@@ -12,32 +12,34 @@ namespace BetterGenshinImpact.Core.Recognition.ONNX;
 public class BgiSessionOption : Singleton<BgiSessionOption>
 {
     private static readonly ILogger<BgiSessionOption> Logger = App.GetLogger<BgiSessionOption>();
-
-    private static readonly Dictionary<string, YoloPredictor> LoadedYoloPredictor =
-        new Dictionary<string, YoloPredictor>();
-    public static string[] InferenceDeviceTypes { get; } = ["CPU", "GPU_Auto", "GPU_DirectML"];
-
-    public SessionOptions Options { get; set; } = TaskContext.Instance().Config.InferenceDevice switch
+    public readonly SessionOptions Options;
+    public readonly FeatureType[] FeatureTypes;
+   public BgiSessionOption()
     {
-        "CPU" => new SessionOptions(),
-        "GPU_DirectML" => MakeSessionOptionWithDirectMlProvider(),
-        "GPU_Auto" => MakeSessionOptionWithAuto(),
-        _ => throw new InvalidEnumArgumentException("无效的推理设备")
-    };
-
-    public static SessionOptions MakeSessionOptionWithDirectMlProvider()
-    {
-        var sessionOptions = new SessionOptions();
-        sessionOptions.AppendExecutionProvider_DML();
-        return sessionOptions;
+        switch (TaskContext.Instance().Config.InferenceDevice)
+        {
+            case DeviceType.Cpu:
+                Options = new SessionOptions();
+                FeatureTypes = [FeatureType.Cpu];
+                break;
+            case DeviceType.GpuAuto:
+                Options = MakeSessionOptionWithAuto(out var featureTypes);
+                FeatureTypes = featureTypes;
+                break;
+            default:
+                throw new InvalidEnumArgumentException("无效的推理设备");
+        }
     }
 
-    public static SessionOptions MakeSessionOptionWithAuto()
+    public static SessionOptions MakeSessionOptionWithAuto(out FeatureType[] featureTypes)
     {
+        List<FeatureType> features = new List<FeatureType>();
         SessionOptions? sessionOptions = null;
         try
         {
             sessionOptions = SessionOptions.MakeSessionOptionWithTensorrtProvider();
+            features.Add(FeatureType.TensorRt);
+            features.Add(FeatureType.Cuda);
             Logger.LogInformation("启用GPU推理: TensorRT");
         }
         catch (Exception e)
@@ -51,6 +53,7 @@ public class BgiSessionOption : Singleton<BgiSessionOption>
             try
             {
                 sessionOptions = SessionOptions.MakeSessionOptionWithCudaProvider();
+                features.Add(FeatureType.Cuda);
                 Logger.LogInformation("启用GPU推理: CUDA");
             }
             catch (Exception ex)
@@ -66,6 +69,7 @@ public class BgiSessionOption : Singleton<BgiSessionOption>
             try
             {
                 sessionOptions.AppendExecutionProvider_DML();
+                features.Add(FeatureType.Dml);
                 Logger.LogInformation("启用GPU推理: DML");
             }
             catch (Exception ex)
@@ -83,27 +87,9 @@ public class BgiSessionOption : Singleton<BgiSessionOption>
         }
 
         sessionOptions.AppendExecutionProvider_CPU();
+        features.Add(FeatureType.Cpu);
+        featureTypes = features.ToArray();
         return sessionOptions;
-    }
-
-    public YoloPredictorOptions YoloPredictorOptions()
-    {
-        return new YoloPredictorOptions()
-        {
-            SessionOptions = Options
-        };
-    }
-
-    public YoloPredictor MakeYoloPredictor(string path)
-    {
-        if (LoadedYoloPredictor.TryGetValue(path,out var result))
-        {
-            return result;
-        }
-        var r = new YoloPredictor(path, YoloPredictorOptions());
-        LoadedYoloPredictor.TryAdd(path, r);
-        return r;
-
     }
 
     // /// <summary>

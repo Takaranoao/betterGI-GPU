@@ -23,7 +23,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 using Windows.System;
-using Wpf.Ui.Controls;
 
 namespace BetterGenshinImpact.ViewModel.Pages;
 
@@ -57,8 +56,12 @@ public partial class HomePageViewModel : ViewModel
     // 记录上次使用原神的句柄
     private IntPtr _hWnd;
 
-    [ObservableProperty]
-    private string[] _inferenceDeviceTypes = BgiSessionOption.InferenceDeviceTypes;
+    // 这两个不会变
+
+    public static DeviceType[] InferenceDeviceTypes => Enum.GetValues<DeviceType>();
+
+    public string InferenceFeatureTypes =>
+        string.Join(',', BgiSessionOption.Instance.FeatureTypes.Select(Enum.GetName));
 
     public HomePageViewModel(IConfigService configService, TaskTriggerDispatcher taskTriggerDispatcher)
     {
@@ -71,9 +74,6 @@ public partial class HomePageViewModel : ViewModel
         if (!OsVersionHelper.IsWindows10_1903_OrGreater)
         {
             _modeNames = _modeNames.Where(x => x != CaptureModes.WindowsGraphicsCapture.ToString()).ToArray();
-            // DirectML 是在 Windows 10 版本 1903 和 Windows SDK 的相应版本中引入的。
-            // https://learn.microsoft.com/zh-cn/windows/ai/directml/dml
-            _inferenceDeviceTypes = _inferenceDeviceTypes.Where(x => x != "GPU_DirectML").ToArray();
         }
 
         WeakReferenceMessenger.Default.Register<PropertyChangedMessage<object>>(this, (sender, msg) =>
@@ -147,8 +147,9 @@ public partial class HomePageViewModel : ViewModel
     }
 
     [RelayCommand]
-    private void OnInferenceDeviceTypeDropDownChanged(string value)
+    private void OnInferenceDeviceTypeDropDownChanged(DeviceType value)
     {
+        // 还是不要实时切换了吧，GPU预热会耗费很长时间。
     }
 
     [RelayCommand]

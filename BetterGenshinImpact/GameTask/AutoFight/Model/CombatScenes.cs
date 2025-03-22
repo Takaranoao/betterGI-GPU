@@ -39,7 +39,7 @@ public class CombatScenes : IDisposable
 
     public int AvatarCount { get; set; }
 
-    private readonly YoloPredictor _predictor = BgiSessionOption.Instance.MakeYoloPredictor(
+    private readonly BgiYoloPredictor _predictor = BgiYoloPredictorFactory.GetPredictor(
         Global.Absolute(@"Assets\Model\Common\avatar_side_classify_sim.onnx"));
 
     public int ExpectedTeamAvatarNum { get; private set; } = 4;
@@ -156,7 +156,7 @@ public class CombatScenes : IDisposable
         src.Save(memoryStream, ImageFormat.Bmp);
         memoryStream.Seek(0, SeekOrigin.Begin);
         speedTimer.Record("角色侧面头像图像转换");
-        var result = _predictor.Classify(memoryStream);
+        var result = _predictor.Predictor.Classify(memoryStream);
         speedTimer.Record("角色侧面头像分类识别");
         Debug.WriteLine($"角色侧面头像识别结果：{result}");
         speedTimer.DebugPrint();
