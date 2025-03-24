@@ -82,8 +82,8 @@ internal class GameTaskManager
     {
         TriggerDictionary ??= new ConcurrentDictionary<string, ITaskTrigger>();
 
-        ITaskTrigger trigger = null;
-            string triggerName = null;
+        ITaskTrigger? trigger = null;
+        string? triggerName = null;
         switch (name)
         {
             case "AutoPick":
@@ -96,10 +96,12 @@ internal class GameTaskManager
                 break;
         }
 
-        if (triggerName == null || trigger == null) return false;
+        if (triggerName == null || trigger == null)
+        {
+            return false;
+        }
         TriggerDictionary[triggerName] = trigger;
         return true;
-
     }
 
     public static void RefreshTriggerConfigs()
