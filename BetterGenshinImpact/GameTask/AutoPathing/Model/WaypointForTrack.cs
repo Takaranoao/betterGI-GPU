@@ -54,5 +54,6 @@ public class WaypointForTrack : Waypoint
                 LogInfo = waypoint.ActionParams;
             }
         }
+        // 非必要不需要在此处新增变量解析，建议把耗时低的解析放到 Handler 中
     }
 }
