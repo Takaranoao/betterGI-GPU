@@ -39,7 +39,7 @@ public class CombatScenes : IDisposable
 
     public int AvatarCount { get; set; }
 
-    private readonly BgiYoloPredictor _predictor = BgiOnnxFactory.GetYoloPredictor(
+    private readonly BgiYoloPredictor _predictor = BgiOnnxFactory.CreateYoloPredictor(
         @"Assets\Model\Common\avatar_side_classify_sim.onnx");
 
     public int ExpectedTeamAvatarNum { get; private set; } = 4;
