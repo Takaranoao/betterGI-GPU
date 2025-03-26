@@ -8,12 +8,17 @@ using System.IO;
 using System.Linq;
 using BetterGenshinImpact.Core.Config;
 using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
+using SharpCompress;
+using Vanara;
 
 namespace BetterGenshinImpact.Core.Recognition.ONNX;
 
 public class BgiSessionOption : Singleton<BgiSessionOption>
 {
     private static readonly ILogger<BgiSessionOption> Logger = App.GetLogger<BgiSessionOption>();
+
+    private static volatile bool _isCudaPathSet = false;
 
     public readonly FeatureType[] FeatureTypes;
 
@@ -31,6 +36,55 @@ public class BgiSessionOption : Singleton<BgiSessionOption>
         optimizedModel = TaskContext.Instance().Config.HardwareAccelerationConfig.OptimizedModel;
     }
 
+    private static void SetCudaPath()
+    {
+        // 获取所有可能包含CUDA/cuDNN路径的环境变量
+        var pathVariables = new HashSet<string>();
+        Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process)?.Split(Path.PathSeparator)
+            .ForEach(s => pathVariables.Add(s));
+        Environment.GetEnvironmentVariable("CUDA_PATH", EnvironmentVariableTarget.Process)?.Split(Path.PathSeparator)
+            .ForEach(s => pathVariables.Add(s));
+        Environment.GetEnvironmentVariable("CUDNN_PATH", EnvironmentVariableTarget.Process)?.Split(Path.PathSeparator)
+            .ForEach(s => pathVariables.Add(s));
+        Environment.GetEnvironmentVariable("LD_LIBRARY_PATH", EnvironmentVariableTarget.Process)?.Split(Path.PathSeparator)
+            .ForEach(s => pathVariables.Add(s));
+        // 用于存储有效的DLL路径
+        var validPaths = new List<string>();
+        var cudaVersion =
+            Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\GPU Computing Toolkit\CUDA",
+                "FirstVersionInstalled", null)?.ToString() ?? "v12.8";
+        string[] filePrefix = ["cudnn", "nvrtc", "cudart", "nvinfer", "cublas", "onnx"];
+
+        var basePaths = pathVariables.ToArray().SelectMany<string, string>(s =>
+        {
+            List<string> r = [s, Path.Combine(s, cudaVersion), Path.Combine(s, "bin"), Path.Combine(s, "lib")];
+            return cudaVersion.StartsWith("v", StringComparison.InvariantCultureIgnoreCase)
+                ? [..r, Path.Combine(s, cudaVersion[1..])]
+                : r;
+        });
+        foreach (var basePath in basePaths)
+        {
+            if (string.IsNullOrWhiteSpace(basePath)) continue;
+            // 检查基础路径是否存在
+            if (!Directory.Exists(basePath)) continue;
+            foreach (var se in filePrefix)
+            {
+                Directory.GetFiles(basePath, $"{se}*.dll").Select(Path.GetDirectoryName).WhereNotNull()
+                    .ForEach(s => validPaths.Add(s));
+            }
+        }
+
+        foreach (var validPath in validPaths)
+        {
+            pathVariables.Add(validPath);
+        }
+
+        // 更新环境变量
+        var updatedPath = string.Join(";", pathVariables);
+        Logger.LogDebug("[GpuAuto]修改PATH为:{}", updatedPath);
+        Environment.SetEnvironmentVariable("PATH", updatedPath, EnvironmentVariableTarget.Process);
+    }
+
     private static List<FeatureType> Initialization(DeviceType deviceType, int cudaDeviceId, int dmlDeviceId)
     {
         switch (deviceType)
@@ -38,6 +92,12 @@ public class BgiSessionOption : Singleton<BgiSessionOption>
             case DeviceType.Cpu:
                 return [FeatureType.Cpu];
             case DeviceType.GpuAuto:
+                if (!_isCudaPathSet)
+                {
+                    _isCudaPathSet = true;
+                    SetCudaPath();
+                }
+
                 List<FeatureType> list = [];
                 SessionOptions? testSession = null;
                 try
@@ -63,7 +123,7 @@ public class BgiSessionOption : Singleton<BgiSessionOption>
                     }
                     catch (Exception e)
                     {
-                        Logger.LogDebug("[init]无法加载Coda。可能不支持，跳过。({Err})", e.Message);
+                        Logger.LogDebug("[init]无法加载Cuda。可能不支持，跳过。({Err})", e.Message);
                     }
                     finally
                     {
