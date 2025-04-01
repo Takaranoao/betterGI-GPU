@@ -101,7 +101,7 @@ public class YapOnnxOcrService : IOcrService
     /// 预处理速度比unsafe快5倍以上,且吃的资源还少
     /// </summary>
     /// <param name="inputImage">输入图像，若不是灰度图会转换</param>
-    /// <param name="tensorMemoryOwnser">tenser的Memory，用完需要释放</param>
+    /// <param name="tensorMemoryOwnser">tensor的Memory，用完需要释放</param>
     /// <returns></returns>
     private static Tensor<float> ToTensorYapDnn(Mat inputImage, out IMemoryOwner<float> tensorMemoryOwnser)
     {

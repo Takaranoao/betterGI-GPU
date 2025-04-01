@@ -6,6 +6,7 @@ using Microsoft.ML.OnnxRuntime;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using BetterGenshinImpact.Core.Config;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
@@ -40,13 +41,17 @@ public class BgiSessionOption : Singleton<BgiSessionOption>
     {
         // 获取所有可能包含CUDA/cuDNN路径的环境变量
         var pathVariables = new HashSet<string>();
-        Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process)?.Split(Path.PathSeparator)
+        Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process)?
+            .Split(Path.PathSeparator)
             .ForEach(s => pathVariables.Add(s));
-        Environment.GetEnvironmentVariable("CUDA_PATH", EnvironmentVariableTarget.Process)?.Split(Path.PathSeparator)
+        Environment.GetEnvironmentVariable("CUDA_PATH", EnvironmentVariableTarget.Process)?
+            .Split(Path.PathSeparator)
             .ForEach(s => pathVariables.Add(s));
-        Environment.GetEnvironmentVariable("CUDNN_PATH", EnvironmentVariableTarget.Process)?.Split(Path.PathSeparator)
+        Environment.GetEnvironmentVariable("CUDNN_PATH", EnvironmentVariableTarget.Process)?
+            .Split(Path.PathSeparator)
             .ForEach(s => pathVariables.Add(s));
-        Environment.GetEnvironmentVariable("LD_LIBRARY_PATH", EnvironmentVariableTarget.Process)?.Split(Path.PathSeparator)
+        Environment.GetEnvironmentVariable("LD_LIBRARY_PATH", EnvironmentVariableTarget.Process)
+            ?.Split(Path.PathSeparator)
             .ForEach(s => pathVariables.Add(s));
         // 用于存储有效的DLL路径
         var validPaths = new List<string>();
@@ -54,14 +59,33 @@ public class BgiSessionOption : Singleton<BgiSessionOption>
             Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\GPU Computing Toolkit\CUDA",
                 "FirstVersionInstalled", null)?.ToString() ?? "v12.8";
         string[] filePrefix = ["cudnn", "nvrtc", "cudart", "nvinfer", "cublas", "onnx"];
+        // CUDNN\v9.8\lib\12.8\x64
+        var basePaths = pathVariables.ToArray()
+            .SelectMany<string, string>(s =>
+                // lib路径
+                [s, Path.Combine(s, cudaVersion), Path.Combine(s, "bin"), Path.Combine(s, "lib")])
+            .SelectMany<string, string>(
+                // cuda的版本
+                s => cudaVersion.StartsWith("v", StringComparison.InvariantCultureIgnoreCase)
+                    ? [s, Path.Combine(s, cudaVersion), Path.Combine(s, cudaVersion[1..])]
+                    : [s, Path.Combine(s, cudaVersion)])
+            .SelectMany<string, string>(s =>
+            {
+                // 体系架构 
+                var architecture = Enum.GetName(RuntimeInformation.ProcessArchitecture);
+                if (architecture is null)
+                {
+                    return [s];
+                }
 
-        var basePaths = pathVariables.ToArray().SelectMany<string, string>(s =>
-        {
-            List<string> r = [s, Path.Combine(s, cudaVersion), Path.Combine(s, "bin"), Path.Combine(s, "lib")];
-            return cudaVersion.StartsWith("v", StringComparison.InvariantCultureIgnoreCase)
-                ? [..r, Path.Combine(s, cudaVersion[1..])]
-                : r;
-        });
+                return
+                [
+                    s, Path.Combine(s, architecture), Path.Combine(s, architecture.ToLowerInvariant()),
+                    Path.Combine(s, architecture.ToUpperInvariant())
+                ];
+            }).Distinct()
+            .WhereNotNull();
+        // 构建出所有可能存在的路径
         foreach (var basePath in basePaths)
         {
             if (string.IsNullOrWhiteSpace(basePath)) continue;
@@ -80,8 +104,15 @@ public class BgiSessionOption : Singleton<BgiSessionOption>
         }
 
         // 更新环境变量
+
+        if (pathVariables.Count <= 0)
+        {
+            Logger.LogWarning("[GpuAuto]SetCudaPath:No valid paths found.");
+            return;
+        }
+
         var updatedPath = string.Join(";", pathVariables);
-        Logger.LogDebug("[GpuAuto]修改PATH为:{}", updatedPath);
+        Logger.LogDebug("[GpuAuto]修改进程PATH为:{UpdatedPath}", updatedPath);
         Environment.SetEnvironmentVariable("PATH", updatedPath, EnvironmentVariableTarget.Process);
     }
 
@@ -100,26 +131,54 @@ public class BgiSessionOption : Singleton<BgiSessionOption>
 
                 List<FeatureType> list = [];
                 SessionOptions? testSession = null;
-                try
+                var hasGpu = false;
+                if (!hasGpu && cudaDeviceId >= 0)
                 {
-                    testSession = SessionOptions.MakeSessionOptionWithTensorrtProvider(cudaDeviceId);
-                    list.Add(FeatureType.TensorRt);
-                }
-                catch (Exception e)
-                {
-                    Logger.LogDebug("[init]无法加载TensorRt。可能不支持，跳过。({Err})", e.Message);
-                }
-                finally
-                {
-                    testSession?.Dispose();
+                    // tensorrt本身包含cuda，设备id也是cuda的id，且比纯cuda效果好很多。
+                    try
+                    {
+                        testSession = SessionOptions.MakeSessionOptionWithTensorrtProvider(cudaDeviceId);
+                        list.Add(FeatureType.TensorRt);
+                        hasGpu = true;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.LogDebug("[init]无法加载TensorRt。可能不支持，跳过。({Err})", e.Message);
+                    }
+                    finally
+                    {
+                        testSession?.Dispose();
+                    }
                 }
 
-                if (!list.Contains(FeatureType.TensorRt))
+                if (!hasGpu && dmlDeviceId >= 0)
                 {
+                    // dml效果不如tensorrt，但是比纯cuda稳定性强
+                    try
+                    {
+                        testSession = new SessionOptions();
+                        testSession.AppendExecutionProvider_DML(dmlDeviceId);
+                        list.Add(FeatureType.Dml);
+                        hasGpu = true;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.LogDebug("[init]无法加载DML。可能不支持，跳过。({Err})", e.Message);
+                    }
+                    finally
+                    {
+                        testSession?.Dispose();
+                    }
+                }
+
+                if (!hasGpu && cudaDeviceId >= 0)
+                {
+                    // cuda优先级比较低，因为跑起来并不太理想。
                     try
                     {
                         testSession = SessionOptions.MakeSessionOptionWithCudaProvider(cudaDeviceId);
                         list.Add(FeatureType.Cuda);
+                        hasGpu = true;
                     }
                     catch (Exception e)
                     {
@@ -131,21 +190,12 @@ public class BgiSessionOption : Singleton<BgiSessionOption>
                     }
                 }
 
-                try
+                if (!hasGpu)
                 {
-                    testSession = new SessionOptions();
-                    testSession.AppendExecutionProvider_DML(dmlDeviceId);
-                    list.Add(FeatureType.Dml);
-                }
-                catch (Exception e)
-                {
-                    Logger.LogDebug("[init]无法加载DML。可能不支持，跳过。({Err})", e.Message);
-                }
-                finally
-                {
-                    testSession?.Dispose();
+                    Logger.LogWarning("[init]GPU自动选择失败，回退到CPU处理");
                 }
 
+                //无论如何都要加入cpu，一些计算在纯gpu上不被支持或性能很烂
                 list.Add(FeatureType.Cpu);
                 return list;
             default:
