@@ -37,7 +37,17 @@ public class OcrFactory
                 new PaddleOcrService(cultureInfoName)),
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
-        Logger.LogDebug("为 {CultureInfoName} 创建了类型为 {Type} 的 OCR服务", result.Key, result.Value);
+        var oldCultureInfoName = GetCultureInfoName(type);
+        if (oldCultureInfoName is null)
+        {
+            Logger.LogDebug("为 {CultureInfoName} 创建了类型为 {Type} 的 OCR服务", result.Key, Enum.GetName(type));
+        }
+        else
+        {
+            Logger.LogDebug("将类型为 {Type} 的 OCR服务从 {OldCultureInfoName} 替换为 {NewCultureInfoName}", Enum.GetName(type),
+                oldCultureInfoName, result.Key);
+        }
+
         _ocrServices[type] = result;
         return result;
     }
@@ -56,7 +66,8 @@ public class OcrFactory
                 try
                 {
                     // 避免重复创建OCR服务实例
-                    if (GetCultureInfoName(ocrEngineTypes) != cultureInfoName)
+                    var old = GetCultureInfoName(ocrEngineTypes);
+                    if (old is null || !cultureInfoName.Equals(old))
                     {
                         CreateAndSet(ocrEngineTypes, cultureInfoName);
                     }
