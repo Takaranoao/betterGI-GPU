@@ -101,12 +101,7 @@ public partial class OtherConfig : ObservableObject
         ///     PaddleOCR模型配置
         /// </summary>
         [ObservableProperty]
-        private PaddleOcrModelConfig _paddleOcrModelConfig = PaddleOcrModelConfig.V4;
-        /// <summary>
-        /// 允许更多的重复
-        /// </summary>
-        [ObservableProperty]
-        private bool _allowDuplicateChar;
+        private PaddleOcrModelConfig _paddleOcrModelConfig = PaddleOcrModelConfig.V4Auto;
     }
     
     //public partial class OtherConfig : ObservableObject
